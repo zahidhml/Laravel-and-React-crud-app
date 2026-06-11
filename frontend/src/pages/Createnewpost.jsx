@@ -6,12 +6,13 @@ import api from "../api/api";
 export default function Createnewpost() {
    const [IsSubmiting,setIsSubmiting] = useState(false);
    const navigate = useNavigate();
+  const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
     'title': "",
     'author': "",
     'category': "",
-    'status': "published",
+    'status': "",
     'content': "",
   });
 
@@ -27,12 +28,16 @@ export default function Createnewpost() {
     e.preventDefault(); 
     setIsSubmiting(true);
     try{
-      const response = await api.post('/posts', formData)
+      const response = await api.post('/create-new-post', formData)
       alert('Post created successfully!');
       navigate('/');
     }catch(error){
-      alert('Error creating post: ' + (error.response?.data?.error || error.message));
-      console.error(error);
+      if (error.response?.data?.error) {
+        setError('Error creating post: ' + error.response.data.error);
+      } else {
+        console.error(error);
+        setError('An unexpected error occurred. Please try again later.');
+      }
     }finally{
       setIsSubmiting(false)
     }
