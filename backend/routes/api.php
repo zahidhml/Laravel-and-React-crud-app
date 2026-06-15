@@ -9,3 +9,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('/create-new-post', [PostController::class, 'createNewPost']);
+Route::get('/posts', [PostController::class, 'index']);

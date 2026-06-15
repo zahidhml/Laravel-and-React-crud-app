@@ -1,7 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../api/api";
 
 export default function Home() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await api.get('/posts');
+        setPosts(response.data.data || []);
+      } catch (err) {
+        console.error(err);
+        setError('Unable to load posts.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
   return (
     <div className="container py-5">
       <div className="row mb-4">
@@ -36,37 +60,49 @@ export default function Home() {
               </thead>
 
               <tbody id="post-table-body">
-                {/* <tr>
-                  <td>1</td>
-
-                  <td>
-                    <a href="view.html?id=1">
-                      Getting Started with Bootstrap 5
-                    </a>
-                  </td>
-
-                  <td>John Doe</td>
-                  <td>web development</td>
-
-                  <td>
-                    <span className="badge bg-success">Published</span>
-                  </td>
-
-                  <td>2026-07-21</td>
-
-                  <td className="action-btns">
-                    <a
-                      href="edit.html?id=1"
-                      className="btn btn-sm btn-primary"
-                    >
-                      <i className="fas fa-edit"></i>
-                    </a>
-
-                    <button className="btn btn-sm btn-danger">
-                      <i className="fas fa-trash"></i>
-                    </button>
-                  </td>
-                </tr> */}
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="text-center py-4">
+                      Loading posts...
+                    </td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <td colSpan="7" className="text-center text-danger py-4">
+                      {error}
+                    </td>
+                  </tr>
+                ) : posts.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="text-center py-4">
+                      No posts found.
+                    </td>
+                  </tr>
+                ) : (
+                  posts.map((post, index) => (
+                    <tr key={post.id}>
+                      <td>{index + 1}</td>
+                      <td>{post.title}</td>
+                      <td>{post.author}</td>
+                      <td>{post.category}</td>
+                      <td>
+                        <span className={
+                          post.status === 'published'
+                            ? 'badge bg-success'
+                            : 'badge bg-secondary'
+                        }>
+                          {post.status}
+                        </span>
+                      </td>
+                      <td>{new Date(post.created_at).toLocaleDateString()}</td>
+                      <td className="action-btns">
+                        <button className="btn btn-sm btn-secondary" disabled>
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

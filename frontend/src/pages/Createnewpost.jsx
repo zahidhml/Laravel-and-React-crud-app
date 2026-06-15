@@ -9,11 +9,11 @@ export default function Createnewpost() {
   const [error, setError] = useState(null);
 
   const [formData, setFormData] = useState({
-    'title': "",
-    'author': "",
-    'category': "",
-    'status': "",
-    'content': "",
+    title: "",
+    author: "",
+    category: "",
+    status: "",
+    content: "",
   });
 
   const handleChange = (e) => {
@@ -25,26 +25,34 @@ export default function Createnewpost() {
 
   };
   const handleSubmit =  async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
+    setError(null);
     setIsSubmiting(true);
-    try{
-      const response = await api.post('/create-new-post', formData)
-      alert('Post created successfully!');
+
+    try {
+      const response = await api.post('/create-new-post', formData);
+      console.log(response.data);
+      alert(response.data.message || 'Post created successfully!');
       navigate('/');
-    }catch(error){
-      if (error.response?.data?.error) {
-        setError('Error creating post: ' + error.response.data.error);
+    } catch (error) {
+      console.error(error);
+      if (error .response .status === 422 && error.response.data.errors) {
+        setError(error.response.data.message || 'Validation error. Please check your input.');
+        // const messages = Object.values(error.response.data.errors)
+        //   .flat()
+        //   .join('\n');   
+        setError(messages);
+      } else if (error.response?.data?.message) {
+        setError(error.response.data.message);
       } else {
-        console.error(error);
         setError('An unexpected error occurred. Please try again later.');
       }
-    }finally{
-      setIsSubmiting(false)
+    } finally {
+      setIsSubmiting(false);
     }
   };
 
-
-
+ 
   return (
     <div className="container py-5">
       <div className="row mb-4">
@@ -59,6 +67,9 @@ export default function Createnewpost() {
           </nav>
         </div>
       </div>
+      {error && 
+      <div className="alert alert-danger">{error}</div>
+      }
       
       <div className="card">
         <div className="card-header">
@@ -66,6 +77,7 @@ export default function Createnewpost() {
         </div>
         <div className="card-body">
           <form id="post-form" onSubmit={handleSubmit}>
+            {/* {error && <div className="alert alert-danger">{error}</div>} */}
             <div className="mb-3">
         <div className="col-md-6">
               <label htmlFor="title" className="form-label">Title</label>
@@ -94,6 +106,7 @@ export default function Createnewpost() {
             <div className="col-md-6 ">
               <label htmlFor="status-select" className="form-label">Status</label>
               <select className="form-select" id="status-select" name="status" value={formData.status} onChange={handleChange}>
+                <option value="">Select a status</option>
                 <option value="published">Published</option>
                 <option value="draft">Draft</option>
               </select>
