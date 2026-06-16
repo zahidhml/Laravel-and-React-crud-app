@@ -108,6 +108,7 @@ export default function Createnewpost() {
               <select className="form-select" id="status-select" name="status" value={formData.status} onChange={handleChange}>
                 <option value="">Select a status</option>
                 <option value="published">Published</option>
+                <option value="archived">Archived</option>
                 <option value="draft">Draft</option>
               </select>
             </div>

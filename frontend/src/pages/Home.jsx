@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/api";
+import moment from 'moment';
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
@@ -45,7 +46,13 @@ export default function Home() {
         </div>
 
         <div className="card-body">
-          <div className="table-responsive">
+          {loading ? (
+            <div className="text-center py-4">Loading posts...</div>
+          ) : error ? (
+            <div className="text-danger text-center py-4">{error}</div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-4">No posts found.</div>
+          ) : (
             <table className="table table-striped table-hover">
               <thead className="table-dark">
                 <tr>
@@ -60,52 +67,46 @@ export default function Home() {
               </thead>
 
               <tbody id="post-table-body">
-                {loading ? (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4">
-                      Loading posts...
+                {posts.map((post, index) => (
+                  <tr key={post.id}>
+                    <td>{index + 1}</td>
+                    <td>{post.title}</td>
+                    <td>{post.author}</td>
+                    <td>{post.category}</td>
+                    <td>
+                      <span className={
+                        post.status === 'published'
+                          ? 'badge bg-success'
+                          :post.status === 'draft'
+
+                          ? 'badge bg-danger'
+                            : post.status === 'archived'
+                            ? 'badge bg-warning text-dark'
+                          : 'badge bg-secondary'
+                          
+                      }>
+                        {post.status}
+                      </span>
+                    </td>
+                    <td>{moment(post.created_at).format('MM/DD/YYYY  hh:mm A')}</td>
+                    <td className="action-btns">
+                      <a href={`edit.html?id=${post.id}`} className="btn btn-sm btn-primary">
+                        <i className="fas fa-edit"></i> 
+                      </a>
+                      <button
+                        className="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal"
+                        data-post-id={post.id}
+                      >
+                        <i className="fas fa-trash"></i>
+                      </button>
                     </td>
                   </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan="7" className="text-center text-danger py-4">
-                      {error}
-                    </td>
-                  </tr>
-                ) : posts.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="text-center py-4">
-                      No posts found.
-                    </td>
-                  </tr>
-                ) : (
-                  posts.map((post, index) => (
-                    <tr key={post.id}>
-                      <td>{index + 1}</td>
-                      <td>{post.title}</td>
-                      <td>{post.author}</td>
-                      <td>{post.category}</td>
-                      <td>
-                        <span className={
-                          post.status === 'published'
-                            ? 'badge bg-success'
-                            : 'badge bg-secondary'
-                        }>
-                          {post.status}
-                        </span>
-                      </td>
-                      <td>{new Date(post.created_at).toLocaleDateString()}</td>
-                      <td className="action-btns">
-                        <button className="btn btn-sm btn-secondary" disabled>
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
+                ))}
               </tbody>
             </table>
-          </div>
+          )}
         </div>
       </div>
 

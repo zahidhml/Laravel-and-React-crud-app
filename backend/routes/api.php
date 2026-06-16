@@ -10,3 +10,4 @@ Route::get('/user', function (Request $request) {
 
 Route::post('/create-new-post', [PostController::class, 'createNewPost']);
 Route::get('/posts', [PostController::class, 'index']);
+Route::get('/get-all-posts', [PostController::class, 'getAllPosts']);
