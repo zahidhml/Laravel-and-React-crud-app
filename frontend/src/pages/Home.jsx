@@ -7,26 +7,41 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [postToDelete, setPostToDelete] = useState(null);
+
+  const fetchPosts = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.get('/posts');
+      setPosts(response.data.data || []);
+    } catch (err) {
+      console.error(err);
+      setError('Unable to load posts.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await api.get('/posts');
-        setPosts(response.data.data || []);
-      } catch (err) {
-        console.error(err);
-        setError('Unable to load posts.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPosts();
   }, []);
 
+  const deletePost = async () => {
+    if (!postToDelete) return;
+
+    try {
+      await api.post('/delete-post', { deleteid: postToDelete });
+      setPostToDelete(null);
+      await fetchPosts();
+      alert('Post deleted successfully!');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete post.');
+    }
+  };
+ 
   return (
     <div className="container py-5">
       <div className="row mb-4">
@@ -90,14 +105,15 @@ export default function Home() {
                     </td>
                     <td>{moment(post.created_at).format('MM/DD/YYYY  hh:mm A')}</td>
                     <td className="action-btns">
-                      <a href={`edit.html?id=${post.id}`} className="btn btn-sm btn-primary">
-                        <i className="fas fa-edit"></i> 
-                      </a>
+                      <Link to={`/edit-post/${post.id}`} className="btn btn-sm btn-primary">
+                        <i className="fas fa-edit"></i>
+                      </Link>
                       <button
+                        type="button"
                         className="btn btn-sm btn-danger"
                         data-bs-toggle="modal"
                         data-bs-target="#deleteModal"
-                        data-post-id={post.id}
+                        onClick={() => setPostToDelete(post.id)}
                       >
                         <i className="fas fa-trash"></i>
                       </button>
@@ -145,7 +161,12 @@ export default function Home() {
                 Cancel
               </button>
 
-              <button type="button" className="btn btn-danger">
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={deletePost}
+                data-bs-dismiss="modal"
+              >
                 Delete
               </button>
             </div>
